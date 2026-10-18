@@ -1,9 +1,15 @@
+import 'package:evently_c20/core/remote/network/firestore_manager.dart';
 import 'package:evently_c20/core/resources/app_constants.dart';
+import 'package:evently_c20/core/resources/dialog_utils.dart';
 import 'package:evently_c20/core/resources/strings_manager.dart';
 import 'package:evently_c20/core/reusable_components/custom_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:evently_c20/model/user.dart' as usermodel;
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/resources/assets_manager.dart';
+import '../../../core/resources/routes_manager.dart';
 import '../../../core/reusable_components/custom_field.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -121,7 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 CustomButton(title: "Sign Up", onClick: () {
                   if(formKey.currentState?.validate()??false){
-                    print("Account created successfully");
+                    createNewAccount();
                   }
                 },),
                 SizedBox(height: 24,),
@@ -139,6 +145,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         padding: EdgeInsets.zero,
                       ),
                       onPressed: (){
+                        Navigator.of(context).pushReplacementNamed(RoutesManager.signIn);
 
                       },
                       child: Text("Login",style:Theme.of(context).textTheme.titleSmall)
@@ -151,5 +158,33 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
+  }
+
+  createNewAccount()async{
+    try{
+      DialogUtils.showLoadingDialog(context);
+      var credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text,
+          password: passController.text
+      );
+      FirestoreManager.saveUser(usermodel.User(
+        id: credential.user?.uid,
+        name: nameController.text,
+        email: emailController.text
+      ));
+      Navigator.of(context).pop();
+      Navigator.of(context).pushReplacementNamed(RoutesManager.home);
+    }on FirebaseAuthException catch (e){
+      Navigator.of(context).pop();
+      if (e.code == 'weak-password') {
+        DialogUtils.showMessageDialog(context: context, content: "The password provided is too weak.");
+
+        print('The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        DialogUtils.showMessageDialog(context: context, content: "The account already exists for that email.");
+      }
+    }catch(e){
+      print("Error catch $e");
+    }
   }
 }

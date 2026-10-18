@@ -2,8 +2,13 @@ import 'package:evently_c20/core/resources/app_theme.dart';
 import 'package:evently_c20/core/resources/colors_manager.dart';
 import 'package:evently_c20/core/resources/routes_manager.dart';
 import 'package:evently_c20/providers/theme_provider.dart';
+import 'package:evently_c20/providers/user_provider.dart';
+import 'package:evently_c20/ui/add_event/screen/add_event_screen.dart';
+import 'package:evently_c20/ui/home/screen/home_screen.dart';
+import 'package:evently_c20/ui/signin/screen/signin_screen.dart';
 import 'package:evently_c20/ui/signup/screen/signup_screen.dart';
 import 'package:evently_c20/ui/start/screen/start_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,9 +38,16 @@ class MyApp extends StatelessWidget {
       themeMode: provider.themeMode,
       routes: {
         RoutesManager.start:(context)=>StartScreen(),
-        RoutesManager.signup:(context)=>SignupScreen()
+        RoutesManager.signup:(context)=>SignupScreen(),
+        RoutesManager.signIn:(context)=>SignInScreen(),
+        RoutesManager.addevent:(context)=>AddEventScreen(),
+        RoutesManager.home:(context)=>ChangeNotifierProvider(
+            create: (context) => UserProvider()..setUserValue(),
+            child: HomeScreen())
       },
-      initialRoute: RoutesManager.signup,
+      initialRoute: FirebaseAuth.instance.currentUser!=null
+          ?RoutesManager.home
+          :RoutesManager.signIn,
     );
   }
 }
