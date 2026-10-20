@@ -170,7 +170,8 @@ class _SignupScreenState extends State<SignupScreen> {
       FirestoreManager.saveUser(usermodel.User(
         id: credential.user?.uid,
         name: nameController.text,
-        email: emailController.text
+        email: emailController.text,
+        favorites: []
       ));
       Navigator.of(context).pop();
       Navigator.of(context).pushReplacementNamed(RoutesManager.home);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/remote/network/firestore_manager.dart';
+import '../../../../../core/resources/app_constants.dart';
 import '../../../../../core/reusable_components/event_item.dart';
 import '../../../../../model/event_model.dart';
 
@@ -10,7 +11,7 @@ class BookView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: FirestoreManager.getAllEvents(),
+      future: FirestoreManager.getFilteredEvents(AppConstants.types[2]),
       builder: (context, snapshot) {
         if(snapshot.connectionState == ConnectionState.waiting){
           // loading status
@@ -29,6 +30,13 @@ class BookView extends StatelessWidget {
         }
         // success status
         List<EventModel> events = snapshot.data??[];
+        if(events.isEmpty){
+          return Center(child: Text('No events found',style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.primary
+          ),),);
+        }
         return ListView.separated(
             itemBuilder: (context, index) => EventItem(event: events[index],),
             separatorBuilder: (context, index) => SizedBox(height: 16,),
